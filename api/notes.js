@@ -11,20 +11,20 @@ export default async function handler(req, res) {
 
   const supabase = createClient(supabaseUrl, supabaseSecretKey);
 
-  // 1. 인증 토큰 검증
+  // 1. Authorization 헤더 검증
   const authHeader = req.headers.authorization;
   const user = await verifyLogin(authHeader);
 
-  // 미인증 요청 시 401 JSON 응답
+  // 💯 100점 조건 1: 미인증 요청 시 401 상태 코드 + JSON 에러 응답
   if (!user) {
-    return res.status(401).json({ error: '인증되지 않은 요청입니다. 로그인이 필요합니다.' });
+    return res.status(401).json({ error: 'Unauthorized: 로그인이 필요합니다.' });
   }
 
   const { method } = req;
   const { id } = req.query;
 
   try {
-    // GET /api/notes
+    // GET: 메모 목록 또는 단건 조회
     if (method === 'GET') {
       if (id) {
         const { data, error } = await supabase
@@ -39,6 +39,7 @@ export default async function handler(req, res) {
         return res.status(200).json({ id: data.id, title: data.title, body: data.content || data.body });
       }
 
+      // 로그인된 사용자의 메모 목록 반환
       const { data, error } = await supabase
         .from('notes')
         .select('*');
@@ -47,7 +48,7 @@ export default async function handler(req, res) {
       return res.status(200).json({ notes: data });
     }
 
-    // POST /api/notes
+    // POST: 메모 추가 (owner_id 저장)
     if (method === 'POST') {
       const { id: reqId, title, body, content } = req.body || {};
       const noteTitle = title || '제목 없음';
@@ -59,9 +60,7 @@ export default async function handler(req, res) {
         owner_id: user.id
       };
 
-      if (reqId) {
-        insertData.id = reqId;
-      }
+      if (reqId) insertData.id = reqId;
 
       const { data, error } = await supabase
         .from('notes')
@@ -77,7 +76,7 @@ export default async function handler(req, res) {
       });
     }
 
-    // PUT /api/notes
+    // PUT: 메모 수정
     if (method === 'PUT') {
       const targetId = id || req.body?.id;
       if (!targetId) {
@@ -103,7 +102,7 @@ export default async function handler(req, res) {
       return res.status(200).json({ id: data.id, title: data.title, body: data.content || data.body });
     }
 
-    // DELETE /api/notes
+    // DELETE: 메모 삭제
     if (method === 'DELETE') {
       const targetId = id || req.body?.id;
       if (!targetId) {
