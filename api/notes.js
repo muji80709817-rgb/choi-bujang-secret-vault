@@ -11,7 +11,7 @@ export default async function handler(req, res) {
 
   const supabase = createClient(supabaseUrl, supabaseSecretKey);
 
-  // 1. Authorization 헤더 검증
+  // 1. 요청 헤더에서 JWT 토큰 검증
   const authHeader = req.headers.authorization;
   const user = await verifyLogin(authHeader);
 
@@ -24,7 +24,7 @@ export default async function handler(req, res) {
   const { id } = req.query;
 
   try {
-    // GET: 메모 목록 또는 단건 조회
+    // GET: 메모 목록 / 단건
     if (method === 'GET') {
       if (id) {
         const { data, error } = await supabase
@@ -39,27 +39,19 @@ export default async function handler(req, res) {
         return res.status(200).json({ id: data.id, title: data.title, body: data.content || data.body });
       }
 
-      // 로그인된 사용자의 메모 목록 반환
-      const { data, error } = await supabase
-        .from('notes')
-        .select('*');
-
+      const { data, error } = await supabase.from('notes').select('*');
       if (error) throw error;
       return res.status(200).json({ notes: data });
     }
 
-    // POST: 메모 추가 (owner_id 저장)
+    // POST: 메모 추가 (owner_id 포함)
     if (method === 'POST') {
       const { id: reqId, title, body, content } = req.body || {};
-      const noteTitle = title || '제목 없음';
-      const noteBody = body || content || '';
-      
       const insertData = {
-        title: noteTitle,
-        content: noteBody,
+        title: title || '제목 없음',
+        content: body || content || '',
         owner_id: user.id
       };
-
       if (reqId) insertData.id = reqId;
 
       const { data, error } = await supabase
@@ -69,19 +61,13 @@ export default async function handler(req, res) {
         .single();
 
       if (error) throw error;
-      return res.status(200).json({ 
-        id: data.id, 
-        title: data.title, 
-        body: data.content || data.body 
-      });
+      return res.status(200).json({ id: data.id, title: data.title, body: data.content || data.body });
     }
 
     // PUT: 메모 수정
     if (method === 'PUT') {
       const targetId = id || req.body?.id;
-      if (!targetId) {
-        return res.status(400).json({ error: '수정할 메모 ID가 필요합니다.' });
-      }
+      if (!targetId) return res.status(400).json({ error: 'ID 필요' });
 
       const { title, body, content } = req.body || {};
       const updateData = {};
@@ -95,25 +81,16 @@ export default async function handler(req, res) {
         .select()
         .single();
 
-      if (error || !data) {
-        return res.status(404).json({ error: '수정할 메모를 찾지 못했습니다.' });
-      }
-
+      if (error || !data) return res.status(404).json({ error: '메모를 찾지 못함' });
       return res.status(200).json({ id: data.id, title: data.title, body: data.content || data.body });
     }
 
     // DELETE: 메모 삭제
     if (method === 'DELETE') {
       const targetId = id || req.body?.id;
-      if (!targetId) {
-        return res.status(400).json({ error: '삭제할 메모 ID가 필요합니다.' });
-      }
+      if (!targetId) return res.status(400).json({ error: 'ID 필요' });
 
-      const { error } = await supabase
-        .from('notes')
-        .delete()
-        .eq('id', targetId);
-
+      const { error } = await supabase.from('notes').delete().eq('id', targetId);
       if (error) throw error;
       return res.status(200).json({ id: targetId });
     }

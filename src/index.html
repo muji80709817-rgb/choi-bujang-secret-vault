@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>점령된 자료실</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+  <div id="app">
+    <h1>점령된 자료실</h1>
+
+    <!-- 1. 로그인 폼 (비로그인 시 표시) -->
+    <div id="auth-section">
+      <h3>로그인</h3>
+      <input type="email" id="email" placeholder="이메일 입력" />
+      <input type="password" id="password" placeholder="비밀번호 입력" />
+      <button id="login-btn">로그인</button>
+      <p id="auth-error" style="color: red;"></p>
+    </div>
+
+    <!-- 2. 메모 영역 (로그인 시 표시) -->
+    <div id="notes-section" style="display: none;">
+      <button id="logout-btn">로그아웃</button>
+      <hr />
+      <h3>가상 메모 목록</h3>
+      <form id="note-form">
+        <input type="text" id="note-title" placeholder="제목" required />
+        <textarea id="note-body" placeholder="내용" required></textarea>
+        <button type="submit">메모 추가</button>
+      </form>
+      <ul id="notes-list"></ul>
+    </div>
+  </div>
+
+  <script>
+    // Project URL과 Publishable Key (공용 키)
+    const SUPABASE_URL = 'https://본인의-supabase-url.supabase.co';
+    const SUPABASE_ANON_KEY = '본인의-supabase-anon-key';
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const authSection = document.getElementById('auth-section');
+    const notesSection = document.getElementById('notes-section');
+    const authError = document.getElementById('auth-error');
+
+    // 세션 상태 체크
+    async function checkSession() {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        authSection.style.display = 'none';
+        notesSection.style.display = 'block';
+        loadNotes(session.access_token);
+      } else {
+        authSection.style.display = 'block';
+        notesSection.style.display = 'none';
+      }
+    }
+
+    // 로그인
+    document.getElementById('login-btn').addEventListener('click', async () => {
+      authError.innerText = '';
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) {
+        authError.innerText = '로그인 실패: ' + error.message;
+      } else {
+        checkSession();
+      }
+    });
+
+    // 로그아웃
+    document.getElementById('logout-btn').addEventListener('click', async () => {
+      await supabase.auth.signOut();
+      checkSession();
+    });
+
+    // 메모 목록 가져오기 (API 호출 시 Access Token 포함)
+    async function loadNotes(token) {
+      const res = await fetch('/api/notes', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await res.json();
+      const listEl = document.getElementById('notes-list');
+      listEl.innerHTML = '';
+
+      if (data.notes) {
+        data.notes.forEach(note => {
+          const li = document.createElement('li');
+          li.innerHTML = `
+            <strong>${note.title}</strong>: ${note.content || note.body}
+            <button onclick="deleteNote('${note.id}')">삭제</button>
+          `;
+          listEl.appendChild(li);
+        });
+      }
+    }
+
+    // 메모 추가
+    document.getElementById('note-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+
+      const title = document.getElementById('note-title').value;
+      const body = document.getElementById('note-body').value;
+
+      await fetch('/api/notes', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`
+        },
+        body: JSON.stringify({ title, body })
+      });
+
+      document.getElementById('note-title').value = '';
+      document.getElementById('note-body').value = '';
+      loadNotes(session.access_token);
+    });
+
+    // 메모 삭제
+    async function deleteNote(id) {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+
+      await fetch(`/api/notes?id=${id}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${session.access_token}` }
+      });
+      loadNotes(session.access_token);
+    }
+
+    checkSession();
+  </script>
+</body>
+</html>
