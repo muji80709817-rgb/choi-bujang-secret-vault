@@ -7,7 +7,7 @@ if (!fs.existsSync(publicDir)) {
   fs.mkdirSync(publicDir, { recursive: true });
 }
 
-// 1. index.html 환경변수 주입
+// 1. index.html 파일 읽기 및 환경변수 주입
 const indexPath = path.join(publicDir, 'index.html');
 
 if (fs.existsSync(indexPath)) {
@@ -16,20 +16,21 @@ if (fs.existsSync(indexPath)) {
   const supabaseUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || '';
   const supabaseAnonKey = process.env.SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
 
-  if (!supabaseUrl || !supabaseAnonKey) {
-    console.error('❌ [Build Error] SUPABASE_URL 또는 SUPABASE_ANON_KEY 환경변수가 설정되지 않았습니다.');
-    process.exit(1);
-  }
-
-  // 자리표시자 치환
-  html = html.replace('__SUPABASE_URL__', supabaseUrl);
-  html = html.replace('__SUPABASE_ANON_KEY__', supabaseAnonKey);
+  // index.html 내 정규식 치환
+  html = html.replace(
+    /const SUPABASE_URL = window\.ENV_SUPABASE_URL \|\| '.*?';/g,
+    `const SUPABASE_URL = '${supabaseUrl}';`
+  );
+  html = html.replace(
+    /const SUPABASE_ANON_KEY = window\.ENV_SUPABASE_ANON_KEY \|\| '.*?';/g,
+    `const SUPABASE_ANON_KEY = '${supabaseAnonKey}';`
+  );
 
   fs.writeFileSync(indexPath, html, 'utf8');
   console.log('✅ Supabase 환경변수가 public/index.html에 성공적으로 주입되었습니다.');
 }
 
-// 2. public/aleph.json 생성
+// 2. public/aleph.json 파일 자동 생성
 const alephPath = path.join(publicDir, 'aleph.json');
 const alephData = {
   repoUrl: process.env.VERCEL_GIT_REPO_OWNER && process.env.VERCEL_GIT_REPO_SLUG

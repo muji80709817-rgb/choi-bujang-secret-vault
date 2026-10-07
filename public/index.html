@@ -53,16 +53,6 @@
     .sub-title { color: #8b949e; font-size: 14px; font-weight: 600; }
     .title { color: #ffffff; font-size: 28px; margin: 8px 0 16px 0; }
     .description { color: #8b949e; margin-bottom: 20px; line-height: 1.5; }
-    .notice-box {
-      border: 1px solid #f85149;
-      background-color: rgba(248, 81, 73, 0.1);
-      color: #ff7b72;
-      padding: 12px 16px;
-      border-radius: 8px;
-      font-size: 14px;
-      margin-bottom: 20px;
-      line-height: 1.4;
-    }
     .action-bar {
       display: flex;
       justify-content: space-between;
@@ -114,7 +104,6 @@
 </head>
 <body>
   <div class="container">
-    <!-- 상단 로그인/회원가입 영역 -->
     <div class="header-auth">
       <div id="authStatus" class="auth-status">비로그인 상태</div>
       <div class="auth-buttons">
@@ -124,7 +113,6 @@
       </div>
     </div>
 
-    <!-- 회원가입/로그인 폼 -->
     <div id="authFormBox" class="form-box">
       <h4 id="authFormTitle" style="margin-top:0; color:#fff;">로그인</h4>
       <input type="email" id="authEmail" placeholder="이메일 주소">
@@ -139,13 +127,11 @@
     <h1 class="title">점령된 자료실</h1>
     <p class="description">지금은 보호 장치가 없는 상태입니다. 아래 기록은 모두 실습을 위해 만든 가상 자료입니다.</p>
 
-    <!-- 비로그인 상태 가이드 메시지 -->
     <div id="loggedOutNotice" class="logged-out-notice">
       🔒 <strong>보호된 가상 메모 자료실입니다.</strong><br>
       자료를 확인하고 메모를 작성하려면 상단의 [로그인]을 진행해 주세요.
     </div>
 
-    <!-- 로그인 시 노출되는 영역 -->
     <div id="memoSection" style="display: none;">
       <div class="action-bar">
         <h3>가상 메모 목록</h3>
@@ -180,22 +166,16 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
-    const SUPABASE_URL = '';
-    const SUPABASE_ANON_KEY = '';
+    const SUPABASE_URL = window.ENV_SUPABASE_URL || '';
+    const SUPABASE_ANON_KEY = window.ENV_SUPABASE_ANON_KEY || '';
 
     let currentUserToken = null;
     let supabaseClient = null;
 
-    function getSupabaseClient() {
-      if (supabaseClient) return supabaseClient;
-      
-      const url = SUPABASE_URL || window.ENV_SUPABASE_URL || '';
-      const key = SUPABASE_ANON_KEY || window.ENV_SUPABASE_ANON_KEY || '';
-      
-      if (window.supabase && url && key) {
-        supabaseClient = window.supabase.createClient(url, key);
+    function initSupabase() {
+      if (SUPABASE_URL && SUPABASE_ANON_KEY && window.supabase) {
+        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
       }
-      return supabaseClient;
     }
 
     function toggleAuthForm(mode) {
@@ -225,11 +205,11 @@
     }
 
     async function checkAuthSession() {
-      const client = getSupabaseClient();
-      if (!client) return;
-      
+      if (!supabaseClient) initSupabase();
+      if (!supabaseClient) return;
+
       try {
-        const { data: { session } } = await client.auth.getSession();
+        const { data: { session } } = await supabaseClient.auth.getSession();
         if (session) {
           currentUserToken = session.access_token;
           document.getElementById('authStatus').innerText = `${session.user.email} (로그인됨)`;
@@ -264,19 +244,19 @@
         return;
       }
 
-      const client = getSupabaseClient();
-      if (!client) {
+      if (!supabaseClient) initSupabase();
+      if (!supabaseClient) {
         alert('⚠️ Supabase 설정이 필요합니다.');
         return;
       }
 
       try {
         if (mode === '로그인') {
-          const { data, error } = await client.auth.signInWithPassword({ email, password });
+          const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
           if (error) throw error;
           alert('✅ 로그인 성공!');
         } else {
-          const { data, error } = await client.auth.signUp({ email, password });
+          const { data, error } = await supabaseClient.auth.signUp({ email, password });
           if (error) throw error;
           alert('✅ 회원가입 요청 완료!');
         }
@@ -288,105 +268,4 @@
     }
 
     async function handleLogout() {
-      const client = getSupabaseClient();
-      if (client) {
-        await client.auth.signOut();
-        await checkAuthSession();
-        alert('🚪 로그아웃 되었습니다.');
-      }
-    }
-
-    async function saveMemo() {
-      const id = document.getElementById('editMemoId').value;
-      const title = document.getElementById('memoTitle').value;
-      const desc = document.getElementById('memoDesc').value;
-
-      if (!title) {
-        alert('⚠️ 제목을 입력해주세요.');
-        return;
-      }
-
-      const headers = { 'Content-Type': 'application/json' };
-      if (currentUserToken) {
-        headers['Authorization'] = `Bearer ${currentUserToken}`;
-      }
-
-      const method = id ? 'PUT' : 'POST';
-      const url = id ? `/api/notes/${id}` : '/api/notes';
-
-      try {
-        const res = await fetch(url, {
-          method: method,
-          headers: headers,
-          body: JSON.stringify({ title, content: desc })
-        });
-
-        const contentType = res.headers.get('content-type');
-        let errorMsg = '권한이 없거나 요청이 거부되었습니다.';
-
-        if (contentType && contentType.includes('application/json')) {
-          const json = await res.json();
-          errorMsg = json.error || json.message || errorMsg;
-        }
-
-        if (res.status === 401 || res.status === 403) {
-          alert(`🚨 [${res.status} 오류] ${errorMsg}`);
-          return;
-        }
-
-        if (!res.ok) {
-          alert(`❌ [오류 코드 ${res.status}] ${errorMsg}`);
-          return;
-        }
-
-        alert('✅ 메모가 저장되었습니다.');
-        toggleMemoForm(null);
-      } catch (err) {
-        alert(`🚨 [401/403 인증 필요] 로그인이 필요한 기능입니다.`);
-      }
-    }
-
-    async function deleteMemo(id) {
-      if (!confirm('해당 메모를 삭제하시겠습니까?')) return;
-
-      const headers = {};
-      if (currentUserToken) {
-        headers['Authorization'] = `Bearer ${currentUserToken}`;
-      }
-
-      try {
-        const res = await fetch(`/api/notes/${id}`, {
-          method: 'DELETE',
-          headers: headers
-        });
-
-        const contentType = res.headers.get('content-type');
-        let errorMsg = '삭제 권한이 없습니다.';
-
-        if (contentType && contentType.includes('application/json')) {
-          const json = await res.json();
-          errorMsg = json.error || json.message || errorMsg;
-        }
-
-        if (res.status === 401 || res.status === 403) {
-          alert(`🚨 [${res.status} 오류] ${errorMsg}`);
-          return;
-        }
-
-        if (!res.ok) {
-          alert(`❌ [오류 코드 ${res.status}] ${errorMsg}`);
-          return;
-        }
-
-        alert('🗑️ 메모가 삭제되었습니다.');
-      } catch (err) {
-        alert(`🚨 [401/403 인증 필요] 삭제 권한이 없거나 로그인이 필요합니다.`);
-      }
-    }
-
-    window.addEventListener('DOMContentLoaded', () => {
-      checkAuthSession();
-    });
-  </script>
-</body>
-</html>
+      if (supabaseClient)
