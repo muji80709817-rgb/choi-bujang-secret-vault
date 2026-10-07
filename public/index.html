@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>점령된 자료실 - 3단계</title>
+  <title>점령된 자료실 - 4단계</title>
   <style>
     * { box-sizing: border-box; }
     body {
@@ -13,37 +13,17 @@
       margin: 0;
       padding: 20px;
     }
-    .container {
-      max-width: 600px;
-      margin: 0 auto;
-    }
+    .container { max-width: 600px; margin: 0 auto; }
     .header-auth {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background-color: #161b22;
-      border: 1px solid #30363d;
-      border-radius: 8px;
-      padding: 12px 16px;
-      margin-bottom: 20px;
+      display: flex; justify-content: space-between; align-items: center;
+      background-color: #161b22; border: 1px solid #30363d; border-radius: 8px;
+      padding: 12px 16px; margin-bottom: 20px;
     }
-    .auth-status {
-      font-size: 14px;
-      color: #8b949e;
-    }
-    .auth-buttons {
-      display: flex;
-      gap: 8px;
-    }
+    .auth-status { font-size: 14px; color: #8b949e; }
+    .auth-buttons { display: flex; gap: 8px; }
     .btn {
-      background-color: #21262d;
-      color: #c9d1d9;
-      border: 1px solid #30363d;
-      padding: 6px 12px;
-      border-radius: 6px;
-      font-size: 13px;
-      cursor: pointer;
-      transition: 0.2s;
+      background-color: #21262d; color: #c9d1d9; border: 1px solid #30363d;
+      padding: 6px 12px; border-radius: 6px; font-size: 13px; cursor: pointer; transition: 0.2s;
     }
     .btn:hover { background-color: #30363d; }
     .btn-primary { background-color: #238636; color: white; border: none; }
@@ -53,52 +33,28 @@
     .sub-title { color: #8b949e; font-size: 14px; font-weight: 600; }
     .title { color: #ffffff; font-size: 28px; margin: 8px 0 16px 0; }
     .description { color: #8b949e; margin-bottom: 20px; line-height: 1.5; }
-    .action-bar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 16px;
-    }
+    .action-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
     .action-bar h3 { margin: 0; color: #ffffff; font-size: 18px; }
     .card-list { display: flex; flex-direction: column; gap: 12px; }
     .card {
-      background-color: #161b22;
-      border: 1px solid #30363d;
-      border-radius: 8px;
-      padding: 16px;
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
+      background-color: #161b22; border: 1px solid #30363d; border-radius: 8px;
+      padding: 16px; display: flex; justify-content: space-between; align-items: flex-start;
     }
     .card-content { flex: 1; }
     .card-title { color: #ffffff; font-weight: bold; font-size: 16px; margin-bottom: 6px; }
     .card-desc { color: #8b949e; font-size: 14px; }
     .card-actions { display: flex; gap: 6px; margin-left: 12px; }
     .form-box {
-      display: none;
-      background-color: #161b22;
-      border: 1px solid #30363d;
-      border-radius: 8px;
-      padding: 16px;
-      margin-bottom: 20px;
+      display: none; background-color: #161b22; border: 1px solid #30363d;
+      border-radius: 8px; padding: 16px; margin-bottom: 20px;
     }
     .form-box input, .form-box textarea {
-      width: 100%;
-      padding: 8px;
-      margin-bottom: 10px;
-      background-color: #0d1117;
-      border: 1px solid #30363d;
-      border-radius: 6px;
-      color: #c9d1d9;
+      width: 100%; padding: 8px; margin-bottom: 10px; background-color: #0d1117;
+      border: 1px solid #30363d; border-radius: 6px; color: #c9d1d9;
     }
     .logged-out-notice {
-      background-color: #161b22;
-      border: 1px solid #30363d;
-      border-radius: 8px;
-      padding: 24px;
-      text-align: center;
-      color: #8b949e;
-      margin-top: 10px;
+      background-color: #161b22; border: 1px solid #30363d; border-radius: 8px;
+      padding: 24px; text-align: center; color: #8b949e; margin-top: 10px;
     }
   </style>
 </head>
@@ -123,9 +79,9 @@
       </div>
     </div>
 
-    <div class="sub-title">BYTE BACK · 1단계 피해 확인</div>
+    <div class="sub-title">BYTE BACK · 4단계 방어전</div>
     <h1 class="title">점령된 자료실</h1>
-    <p class="description">지금은 보호 장치가 없는 상태입니다. 아래 기록은 모두 실습을 위해 만든 가상 자료입니다.</p>
+    <p class="description">인증 및 인가 통제가 적용된 가상 메모 자료실입니다.</p>
 
     <div id="loggedOutNotice" class="logged-out-notice">
       🔒 <strong>보호된 가상 메모 자료실입니다.</strong><br>
@@ -134,7 +90,7 @@
 
     <div id="memoSection" style="display: none;">
       <div class="action-bar">
-        <h3>가상 메모 목록</h3>
+        <h3>내 메모 목록</h3>
         <button class="btn btn-primary" onclick="toggleMemoForm('create')">+ 메모 추가</button>
       </div>
 
@@ -149,38 +105,30 @@
         </div>
       </div>
 
-      <div id="cards" class="card-list">
-        <div class="card">
-          <div class="card-content">
-            <div class="card-title">과제</div>
-            <div class="card-desc">실습용 가상 과제 기록</div>
-          </div>
-          <div class="card-actions">
-            <button class="btn" onclick="toggleMemoForm('edit', '1', '과제', '실습용 가상 과제 기록')">수정</button>
-            <button class="btn btn-danger" onclick="deleteMemo('1')">삭제</button>
-          </div>
-        </div>
-      </div>
+      <div id="cards" class="card-list"></div>
     </div>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
-    const SUPABASE_URL = window.ENV_SUPABASE_URL || '';
-    const SUPABASE_ANON_KEY = window.ENV_SUPABASE_ANON_KEY || '';
+    const SUPABASE_URL = '__SUPABASE_URL__';
+    const SUPABASE_ANON_KEY = '__SUPABASE_ANON_KEY__';
 
     let currentUserToken = null;
     let supabaseClient = null;
 
-    function initSupabase() {
-      if (SUPABASE_URL && SUPABASE_ANON_KEY && window.supabase) {
+    function getSupabaseClient() {
+      if (supabaseClient) return supabaseClient;
+      if (window.supabase && SUPABASE_URL && SUPABASE_ANON_KEY && !SUPABASE_URL.startsWith('__')) {
         supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
       }
+      return supabaseClient;
     }
 
     function toggleAuthForm(mode) {
       const form = document.getElementById('authFormBox');
       const title = document.getElementById('authFormTitle');
+      if (!form || !title) return;
       if (!mode) { form.style.display = 'none'; return; }
       title.innerText = mode === 'login' ? '로그인' : '회원가입';
       form.style.display = 'block';
@@ -189,6 +137,7 @@
     function toggleMemoForm(mode, id = '', title = '', desc = '') {
       const form = document.getElementById('memoFormBox');
       const formTitle = document.getElementById('memoFormTitle');
+      if (!form || !formTitle) return;
       if (!mode) { form.style.display = 'none'; return; }
       if (mode === 'edit') {
         formTitle.innerText = '메모 수정';
@@ -205,11 +154,11 @@
     }
 
     async function checkAuthSession() {
-      if (!supabaseClient) initSupabase();
-      if (!supabaseClient) return;
+      const client = getSupabaseClient();
+      if (!client) return;
 
       try {
-        const { data: { session } } = await supabaseClient.auth.getSession();
+        const { data: { session } } = await client.auth.getSession();
         if (session) {
           currentUserToken = session.access_token;
           document.getElementById('authStatus').innerText = `${session.user.email} (로그인됨)`;
@@ -219,6 +168,8 @@
 
           document.getElementById('loggedOutNotice').style.display = 'none';
           document.getElementById('memoSection').style.display = 'block';
+
+          await fetchMemos();
         } else {
           currentUserToken = null;
           document.getElementById('authStatus').innerText = '비로그인 상태';
@@ -235,8 +186,8 @@
     }
 
     async function submitAuth() {
-      const email = document.getElementById('authEmail').value;
-      const password = document.getElementById('authPassword').value;
+      const email = document.getElementById('authEmail').value.trim();
+      const password = document.getElementById('authPassword').value.trim();
       const mode = document.getElementById('authFormTitle').innerText;
 
       if (!email || !password) {
@@ -244,21 +195,21 @@
         return;
       }
 
-      if (!supabaseClient) initSupabase();
-      if (!supabaseClient) {
-        alert('⚠️ Supabase 설정이 필요합니다.');
+      const client = getSupabaseClient();
+      if (!client) {
+        alert('⚠️ Supabase 설정이 필요합니다. Vercel 환경변수를 확인해주세요.');
         return;
       }
 
       try {
         if (mode === '로그인') {
-          const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+          const { data, error } = await client.auth.signInWithPassword({ email, password });
           if (error) throw error;
           alert('✅ 로그인 성공!');
         } else {
-          const { data, error } = await supabaseClient.auth.signUp({ email, password });
+          const { data, error } = await client.auth.signUp({ email, password });
           if (error) throw error;
-          alert('✅ 회원가입 요청 완료!');
+          alert('✅ 회원가입 요청 완료! (이메일 확인이 필요할 수 있습니다)');
         }
         toggleAuthForm(null);
         await checkAuthSession();
@@ -268,4 +219,131 @@
     }
 
     async function handleLogout() {
-      if (supabaseClient)
+      const client = getSupabaseClient();
+      if (client) {
+        await client.auth.signOut();
+        await checkAuthSession();
+        alert('🚪 로그아웃 되었습니다.');
+      }
+    }
+
+    async function fetchMemos() {
+      if (!currentUserToken) return;
+      try {
+        const res = await fetch('/api/notes', {
+          headers: { 'Authorization': `Bearer ${currentUserToken}` }
+        });
+        if (!res.ok) return;
+
+        const notes = await res.json();
+        const container = document.getElementById('cards');
+        container.innerHTML = '';
+
+        notes.forEach(note => {
+          const card = document.createElement('div');
+          card.className = 'card';
+          
+          const contentDiv = document.createElement('div');
+          contentDiv.className = 'card-content';
+          
+          const titleDiv = document.createElement('div');
+          titleDiv.className = 'card-title';
+          titleDiv.textContent = note.title;
+
+          const descDiv = document.createElement('div');
+          descDiv.className = 'card-desc';
+          descDiv.textContent = note.content || note.body || '';
+
+          contentDiv.appendChild(titleDiv);
+          contentDiv.appendChild(descDiv);
+
+          const actionsDiv = document.createElement('div');
+          actionsDiv.className = 'card-actions';
+
+          const editBtn = document.createElement('button');
+          editBtn.className = 'btn';
+          editBtn.textContent = '수정';
+          editBtn.onclick = () => toggleMemoForm('edit', note.id, note.title, note.content || note.body || '');
+
+          const deleteBtn = document.createElement('button');
+          deleteBtn.className = 'btn btn-danger';
+          deleteBtn.textContent = '삭제';
+          deleteBtn.onclick = () => deleteMemo(note.id);
+
+          actionsDiv.appendChild(editBtn);
+          actionsDiv.appendChild(deleteBtn);
+
+          card.appendChild(contentDiv);
+          card.appendChild(actionsDiv);
+          container.appendChild(card);
+        });
+      } catch (err) {
+        console.error('Fetch memos error:', err);
+      }
+    }
+
+    async function saveMemo() {
+      const id = document.getElementById('editMemoId').value;
+      const title = document.getElementById('memoTitle').value;
+      const desc = document.getElementById('memoDesc').value;
+
+      if (!title) {
+        alert('⚠️ 제목을 입력해주세요.');
+        return;
+      }
+
+      const headers = { 'Content-Type': 'application/json' };
+      if (currentUserToken) headers['Authorization'] = `Bearer ${currentUserToken}`;
+
+      const method = id ? 'PUT' : 'POST';
+      const url = id ? `/api/notes/${id}` : '/api/notes';
+
+      try {
+        const res = await fetch(url, {
+          method,
+          headers,
+          body: JSON.stringify({ title, content: desc })
+        });
+
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          alert(`🚨 [오류 ${res.status}] ${errData.error || '요청이 거부되었습니다.'}`);
+          return;
+        }
+
+        alert('✅ 메모가 저장되었습니다.');
+        toggleMemoForm(null);
+        await fetchMemos();
+      } catch (err) {
+        alert('🚨 네트워크 오류가 발생했습니다.');
+      }
+    }
+
+    async function deleteMemo(id) {
+      if (!confirm('해당 메모를 삭제하시겠습니까?')) return;
+
+      const headers = {};
+      if (currentUserToken) headers['Authorization'] = `Bearer ${currentUserToken}`;
+
+      try {
+        const res = await fetch(`/api/notes/${id}`, { method: 'DELETE', headers });
+
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          alert(`🚨 [오류 ${res.status}] ${errData.error || '삭제 권한이 없습니다.'}`);
+          return;
+        }
+
+        alert('🗑️ 메모가 삭제되었습니다.');
+        await fetchMemos();
+      } catch (err) {
+        alert('🚨 삭제 중 오류가 발생했습니다.');
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      checkAuthSession();
+    });
+  </script>
+</body>
+</html>

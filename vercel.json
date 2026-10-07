@@ -1,4 +1,10 @@
 {
+  "rewrites": [
+    {
+      "source": "/api/notes/:id",
+      "destination": "/api/notes?id=:id"
+    }
+  ],
   "headers": [
     {
       "source": "/(.*)",
