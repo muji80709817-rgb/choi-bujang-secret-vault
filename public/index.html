@@ -198,15 +198,20 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
-    // Supabase 프로젝트 URL 및 Anon Key 설정 (실제 본인의 Key로 설정)
-    const SUPABASE_URL = window.ENV_SUPABASE_URL || 'https://YOUR_SUPABASE_PROJECT_ID.supabase.co';
-    const SUPABASE_ANON_KEY = window.ENV_SUPABASE_ANON_KEY || 'YOUR_SUPABASE_ANON_KEY';
-    
-    const supabase = (window.supabase && SUPABASE_URL.startsWith('http')) 
-      ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) 
-      : null;
-
     let currentUserToken = null;
+    let supabaseClient = null;
+
+    function initSupabase() {
+      try {
+        const url = window.ENV_SUPABASE_URL || '';
+        const key = window.ENV_SUPABASE_ANON_KEY || '';
+        if (window.supabase && url && key) {
+          supabaseClient = window.supabase.createClient(url, key);
+        }
+      } catch (e) {
+        console.warn('Supabase client init warning:', e);
+      }
+    }
 
     function toggleAuthForm(mode) {
       const form = document.getElementById('authFormBox');
@@ -235,20 +240,18 @@
     }
 
     async function checkAuthSession() {
-      if (!supabase) return;
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
-        currentUserToken = session.access_token;
-        document.getElementById('authStatus').innerText = `${session.user.email} (로그인됨)`;
-        document.getElementById('btnLogin').style.display = 'none';
-        document.getElementById('btnSignup').style.display = 'none';
-        document.getElementById('btnLogout').style.display = 'inline-block';
-      } else {
-        currentUserToken = null;
-        document.getElementById('authStatus').innerText = '비로그인 상태';
-        document.getElementById('btnLogin').style.display = 'inline-block';
-        document.getElementById('btnSignup').style.display = 'inline-block';
-        document.getElementById('btnLogout').style.display = 'none';
+      if (!supabaseClient) return;
+      try {
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        if (session) {
+          currentUserToken = session.access_token;
+          document.getElementById('authStatus').innerText = `${session.user.email} (로그인됨)`;
+          document.getElementById('btnLogin').style.display = 'none';
+          document.getElementById('btnSignup').style.display = 'none';
+          document.getElementById('btnLogout').style.display = 'inline-block';
+        }
+      } catch (err) {
+        console.error('Session check failed:', err);
       }
     }
 
@@ -262,37 +265,40 @@
         return;
       }
 
-      if (!supabase) {
-        alert('⚠️ Supabase 설정(URL/ANON_KEY)을 먼저 입력해주세요.');
+      if (!supabaseClient) {
+        alert('⚠️ Supabase 설정(URL 및 ANON_KEY)이 필요합니다.');
         return;
       }
 
       try {
         if (mode === '로그인') {
-          const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+          const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
           if (error) throw error;
           alert('✅ 로그인 성공!');
         } else {
-          const { data, error } = await supabase.auth.signUp({ email, password });
+          const { data, error } = await supabaseClient.auth.signUp({ email, password });
           if (error) throw error;
-          alert('✅ 회원가입 요청이 완료되었습니다.');
+          alert('✅ 회원가입 요청 완료!');
         }
         toggleAuthForm(null);
         await checkAuthSession();
       } catch (err) {
-        alert('❌ 로그인/회원가입 실패: ' + err.message);
+        alert('❌ 인증 실패: ' + err.message);
       }
     }
 
     async function handleLogout() {
-      if (supabase) {
-        await supabase.auth.signOut();
-        await checkAuthSession();
+      if (supabaseClient) {
+        await supabaseClient.auth.signOut();
+        currentUserToken = null;
+        document.getElementById('authStatus').innerText = '비로그인 상태';
+        document.getElementById('btnLogin').style.display = 'inline-block';
+        document.getElementById('btnSignup').style.display = 'inline-block';
+        document.getElementById('btnLogout').style.display = 'none';
         alert('🚪 로그아웃 되었습니다.');
       }
     }
 
-    // 메모 추가 / 수정 (비로그인 시 401/403 오류 팝업 출력)
     async function saveMemo() {
       const id = document.getElementById('editMemoId').value;
       const title = document.getElementById('memoTitle').value;
@@ -327,7 +333,6 @@
         }
 
         if (res.status === 401 || res.status === 403) {
-          // 과제 요구사항: 401/403 팝업창 띄우기
           alert(`🚨 [${res.status} 오류] ${errorMsg}`);
           return;
         }
@@ -340,12 +345,10 @@
         alert('✅ 메모가 저장되었습니다.');
         toggleMemoForm(null);
       } catch (err) {
-        // 비로그인 상태일 때 거부 팝업
-        alert(`🚨 [401/403 인증 필요] 로그인이 필요한 기능입니다.\n(오류 내용: ${err.message})`);
+        alert(`🚨 [401/403 인증 필요] 로그인이 필요한 기능입니다.`);
       }
     }
 
-    // 메모 삭제 (비로그인 시 401/403 오류 팝업 출력)
     async function deleteMemo(id) {
       if (!confirm('해당 메모를 삭제하시겠습니까?')) return;
 
@@ -385,6 +388,7 @@
     }
 
     window.addEventListener('DOMContentLoaded', () => {
+      initSupabase();
       checkAuthSession();
     });
   </script>
