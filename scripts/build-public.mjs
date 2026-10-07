@@ -1,8 +1,15 @@
 import fs from 'fs';
 import path from 'path';
 
-// 기존 빌드 로직 수행 후 index.html 파일 읽기
-const indexPath = path.join(process.cwd(), 'public', 'index.html');
+const publicDir = path.join(process.cwd(), 'public');
+
+// 1. public 디렉터리가 없으면 생성
+if (!fs.existsSync(publicDir)) {
+  fs.mkdirSync(publicDir, { recursive: true });
+}
+
+// 2. index.html 환경변수 주입
+const indexPath = path.join(publicDir, 'index.html');
 
 if (fs.existsSync(indexPath)) {
   let html = fs.readFileSync(indexPath, 'utf8');
@@ -23,3 +30,20 @@ if (fs.existsSync(indexPath)) {
   fs.writeFileSync(indexPath, html, 'utf8');
   console.log('✅ Supabase 환경변수가 public/index.html에 성공적으로 주입되었습니다.');
 }
+
+// 3. public/aleph.json 자동 생성 (Vercel 메타데이터 활용)
+const alephPath = path.join(publicDir, 'aleph.json');
+
+const alephData = {
+  repoUrl: process.env.VERCEL_GIT_REPO_OWNER && process.env.VERCEL_GIT_REPO_SLUG
+    ? `https://github.com/${process.env.VERCEL_GIT_REPO_OWNER}/${process.env.VERCEL_GIT_REPO_SLUG}`
+    : 'https://github.com/local/repo',
+  publicAppUrl: process.env.VERCEL_URL
+    ? `https://${process.env.VERCEL_URL}`
+    : 'http://localhost:3000',
+  commitSha: process.env.VERCEL_GIT_COMMIT_SHA || 'local-commit',
+  builtAt: new Date().toISOString()
+};
+
+fs.writeFileSync(alephPath, JSON.stringify(alephData, null, 2), 'utf8');
+console.log('✅ public/aleph.json 파일이 성공적으로 생성되었습니다.');
