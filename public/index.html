@@ -101,7 +101,6 @@
       border-radius: 6px;
       color: #c9d1d9;
     }
-    /* 비로그인 안내 메시지 상자 */
     .logged-out-notice {
       background-color: #161b22;
       border: 1px solid #30363d;
@@ -140,20 +139,19 @@
     <h1 class="title">점령된 자료실</h1>
     <p class="description">지금은 보호 장치가 없는 상태입니다. 아래 기록은 모두 실습을 위해 만든 가상 자료입니다.</p>
 
-    <!-- 비로그인 상태일 때 노출되는 가이드 메시지 -->
+    <!-- 비로그인 상태 가이드 메시지 -->
     <div id="loggedOutNotice" class="logged-out-notice">
       🔒 <strong>보호된 가상 메모 자료실입니다.</strong><br>
       자료를 확인하고 메모를 작성하려면 상단의 [로그인]을 진행해 주세요.
     </div>
 
-    <!-- 로그인했을 때만 표시되는 가상 메모 영역 전체 -->
+    <!-- 로그인 시 노출되는 영역 -->
     <div id="memoSection" style="display: none;">
       <div class="action-bar">
         <h3>가상 메모 목록</h3>
         <button class="btn btn-primary" onclick="toggleMemoForm('create')">+ 메모 추가</button>
       </div>
 
-      <!-- 메모 작성/수정 폼 -->
       <div id="memoFormBox" class="form-box">
         <h4 id="memoFormTitle" style="margin-top:0; color:#fff;">새 메모 추가</h4>
         <input type="hidden" id="editMemoId">
@@ -165,7 +163,6 @@
         </div>
       </div>
 
-      <!-- 메모 카드 목록 -->
       <div id="cards" class="card-list">
         <div class="card">
           <div class="card-content">
@@ -175,36 +172,6 @@
           <div class="card-actions">
             <button class="btn" onclick="toggleMemoForm('edit', '1', '과제', '실습용 가상 과제 기록')">수정</button>
             <button class="btn btn-danger" onclick="deleteMemo('1')">삭제</button>
-          </div>
-        </div>
-        <div class="card">
-          <div class="card-content">
-            <div class="card-title">포트폴리오</div>
-            <div class="card-desc">실습용 가상 포트폴리오 기록</div>
-          </div>
-          <div class="card-actions">
-            <button class="btn" onclick="toggleMemoForm('edit', '2', '포트폴리오', '실습용 가상 포트폴리오 기록')">수정</button>
-            <button class="btn btn-danger" onclick="deleteMemo('2')">삭제</button>
-          </div>
-        </div>
-        <div class="card">
-          <div class="card-content">
-            <div class="card-title">아침 리추얼</div>
-            <div class="card-desc">실습용 가상 리추얼 기록</div>
-          </div>
-          <div class="card-actions">
-            <button class="btn" onclick="toggleMemoForm('edit', '3', '아침 리추얼', '실습용 가상 리추얼 기록')">수정</button>
-            <button class="btn btn-danger" onclick="deleteMemo('3')">삭제</button>
-          </div>
-        </div>
-        <div class="card">
-          <div class="card-content">
-            <div class="card-title">훈련 행정 자료</div>
-            <div class="card-desc">실습용 가상 행정 기록</div>
-          </div>
-          <div class="card-actions">
-            <button class="btn" onclick="toggleMemoForm('edit', '4', '훈련 행정 자료', '실습용 가상 행정 기록')">수정</button>
-            <button class="btn btn-danger" onclick="deleteMemo('4')">삭제</button>
           </div>
         </div>
       </div>
@@ -217,20 +184,18 @@
     const SUPABASE_ANON_KEY = '';
 
     let currentUserToken = null;
-    let supabaseClient = (window.supabase && SUPABASE_URL && SUPABASE_ANON_KEY)
-      ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
-      : null;
+    let supabaseClient = null;
 
-    function initSupabase() {
-      try {
-        const url = window.ENV_SUPABASE_URL || '';
-        const key = window.ENV_SUPABASE_ANON_KEY || '';
-        if (window.supabase && url && key) {
-          supabaseClient = window.supabase.createClient(url, key);
-        }
-      } catch (e) {
-        console.warn('Supabase client init warning:', e);
+    function getSupabaseClient() {
+      if (supabaseClient) return supabaseClient;
+      
+      const url = SUPABASE_URL || window.ENV_SUPABASE_URL || '';
+      const key = SUPABASE_ANON_KEY || window.ENV_SUPABASE_ANON_KEY || '';
+      
+      if (window.supabase && url && key) {
+        supabaseClient = window.supabase.createClient(url, key);
       }
+      return supabaseClient;
     }
 
     function toggleAuthForm(mode) {
@@ -259,11 +224,12 @@
       form.style.display = 'block';
     }
 
-    // 로그인 여부에 따른 UI 화면 전환 (핵심 조건)
     async function checkAuthSession() {
-      if (!supabaseClient) return;
+      const client = getSupabaseClient();
+      if (!client) return;
+      
       try {
-        const { data: { session } } = await supabaseClient.auth.getSession();
+        const { data: { session } } = await client.auth.getSession();
         if (session) {
           currentUserToken = session.access_token;
           document.getElementById('authStatus').innerText = `${session.user.email} (로그인됨)`;
@@ -271,7 +237,6 @@
           document.getElementById('btnSignup').style.display = 'none';
           document.getElementById('btnLogout').style.display = 'inline-block';
 
-          // 로그인 상태: 가이드 숨기고 메모 목록 노출
           document.getElementById('loggedOutNotice').style.display = 'none';
           document.getElementById('memoSection').style.display = 'block';
         } else {
@@ -281,7 +246,6 @@
           document.getElementById('btnSignup').style.display = 'inline-block';
           document.getElementById('btnLogout').style.display = 'none';
 
-          // 비로그인 상태: 메모 목록 숨기고 안내 문구 노출
           document.getElementById('loggedOutNotice').style.display = 'block';
           document.getElementById('memoSection').style.display = 'none';
         }
@@ -300,18 +264,19 @@
         return;
       }
 
-      if (!supabaseClient) {
+      const client = getSupabaseClient();
+      if (!client) {
         alert('⚠️ Supabase 설정이 필요합니다.');
         return;
       }
 
       try {
         if (mode === '로그인') {
-          const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+          const { data, error } = await client.auth.signInWithPassword({ email, password });
           if (error) throw error;
           alert('✅ 로그인 성공!');
         } else {
-          const { data, error } = await supabaseClient.auth.signUp({ email, password });
+          const { data, error } = await client.auth.signUp({ email, password });
           if (error) throw error;
           alert('✅ 회원가입 요청 완료!');
         }
@@ -323,8 +288,9 @@
     }
 
     async function handleLogout() {
-      if (supabaseClient) {
-        await supabaseClient.auth.signOut();
+      const client = getSupabaseClient();
+      if (client) {
+        await client.auth.signOut();
         await checkAuthSession();
         alert('🚪 로그아웃 되었습니다.');
       }
@@ -419,7 +385,6 @@
     }
 
     window.addEventListener('DOMContentLoaded', () => {
-      initSupabase();
       checkAuthSession();
     });
   </script>
