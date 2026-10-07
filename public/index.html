@@ -198,8 +198,14 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
+    // index.html 스크립트 시작 부분
+    const SUPABASE_URL = window.ENV_SUPABASE_URL || '';
+    const SUPABASE_ANON_KEY = window.ENV_SUPABASE_ANON_KEY || '';
+
     let currentUserToken = null;
-    let supabaseClient = null;
+    let supabaseClient = (window.supabase && SUPABASE_URL && SUPABASE_ANON_KEY)
+  ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+  : null;
 
     function initSupabase() {
       try {
