@@ -101,6 +101,16 @@
       border-radius: 6px;
       color: #c9d1d9;
     }
+    /* 비로그인 안내 메시지 상자 */
+    .logged-out-notice {
+      background-color: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 8px;
+      padding: 24px;
+      text-align: center;
+      color: #8b949e;
+      margin-top: 10px;
+    }
   </style>
 </head>
 <body>
@@ -130,67 +140,72 @@
     <h1 class="title">점령된 자료실</h1>
     <p class="description">지금은 보호 장치가 없는 상태입니다. 아래 기록은 모두 실습을 위해 만든 가상 자료입니다.</p>
 
-    <div class="notice-box">
-      로그인하지 않은 방문자도 자료를 볼 수 있습니다. 공개 범위를 확인하고, 다음 제작 단계에서 접근을 차례로 막아 주세요.
+    <!-- 비로그인 상태일 때 노출되는 가이드 메시지 -->
+    <div id="loggedOutNotice" class="logged-out-notice">
+      🔒 <strong>보호된 가상 메모 자료실입니다.</strong><br>
+      자료를 확인하고 메모를 작성하려면 상단의 [로그인]을 진행해 주세요.
     </div>
 
-    <div class="action-bar">
-      <h3>가상 메모 목록</h3>
-      <button class="btn btn-primary" onclick="toggleMemoForm('create')">+ 메모 추가</button>
-    </div>
+    <!-- 로그인했을 때만 표시되는 가상 메모 영역 전체 -->
+    <div id="memoSection" style="display: none;">
+      <div class="action-bar">
+        <h3>가상 메모 목록</h3>
+        <button class="btn btn-primary" onclick="toggleMemoForm('create')">+ 메모 추가</button>
+      </div>
 
-    <!-- 메모 작성/수정 폼 -->
-    <div id="memoFormBox" class="form-box">
-      <h4 id="memoFormTitle" style="margin-top:0; color:#fff;">새 메모 추가</h4>
-      <input type="hidden" id="editMemoId">
-      <input type="text" id="memoTitle" placeholder="제목">
-      <textarea id="memoDesc" rows="3" placeholder="내용 입력"></textarea>
-      <div style="display:flex; gap:8px;">
-        <button class="btn btn-primary" onclick="saveMemo()">저장</button>
-        <button class="btn" onclick="toggleMemoForm(null)">취소</button>
+      <!-- 메모 작성/수정 폼 -->
+      <div id="memoFormBox" class="form-box">
+        <h4 id="memoFormTitle" style="margin-top:0; color:#fff;">새 메모 추가</h4>
+        <input type="hidden" id="editMemoId">
+        <input type="text" id="memoTitle" placeholder="제목">
+        <textarea id="memoDesc" rows="3" placeholder="내용 입력"></textarea>
+        <div style="display:flex; gap:8px;">
+          <button class="btn btn-primary" onclick="saveMemo()">저장</button>
+          <button class="btn" onclick="toggleMemoForm(null)">취소</button>
+        </div>
       </div>
-    </div>
 
-    <!-- 메모 카드 목록 -->
-    <div id="cards" class="card-list">
-      <div class="card">
-        <div class="card-content">
-          <div class="card-title">과제</div>
-          <div class="card-desc">실습용 가상 과제 기록</div>
+      <!-- 메모 카드 목록 -->
+      <div id="cards" class="card-list">
+        <div class="card">
+          <div class="card-content">
+            <div class="card-title">과제</div>
+            <div class="card-desc">실습용 가상 과제 기록</div>
+          </div>
+          <div class="card-actions">
+            <button class="btn" onclick="toggleMemoForm('edit', '1', '과제', '실습용 가상 과제 기록')">수정</button>
+            <button class="btn btn-danger" onclick="deleteMemo('1')">삭제</button>
+          </div>
         </div>
-        <div class="card-actions">
-          <button class="btn" onclick="toggleMemoForm('edit', '1', '과제', '실습용 가상 과제 기록')">수정</button>
-          <button class="btn btn-danger" onclick="deleteMemo('1')">삭제</button>
+        <div class="card">
+          <div class="card-content">
+            <div class="card-title">포트폴리오</div>
+            <div class="card-desc">실습용 가상 포트폴리오 기록</div>
+          </div>
+          <div class="card-actions">
+            <button class="btn" onclick="toggleMemoForm('edit', '2', '포트폴리오', '실습용 가상 포트폴리오 기록')">수정</button>
+            <button class="btn btn-danger" onclick="deleteMemo('2')">삭제</button>
+          </div>
         </div>
-      </div>
-      <div class="card">
-        <div class="card-content">
-          <div class="card-title">포트폴리오</div>
-          <div class="card-desc">실습용 가상 포트폴리오 기록</div>
+        <div class="card">
+          <div class="card-content">
+            <div class="card-title">아침 리추얼</div>
+            <div class="card-desc">실습용 가상 리추얼 기록</div>
+          </div>
+          <div class="card-actions">
+            <button class="btn" onclick="toggleMemoForm('edit', '3', '아침 리추얼', '실습용 가상 리추얼 기록')">수정</button>
+            <button class="btn btn-danger" onclick="deleteMemo('3')">삭제</button>
+          </div>
         </div>
-        <div class="card-actions">
-          <button class="btn" onclick="toggleMemoForm('edit', '2', '포트폴리오', '실습용 가상 포트폴리오 기록')">수정</button>
-          <button class="btn btn-danger" onclick="deleteMemo('2')">삭제</button>
-        </div>
-      </div>
-      <div class="card">
-        <div class="card-content">
-          <div class="card-title">아침 리추얼</div>
-          <div class="card-desc">실습용 가상 리추얼 기록</div>
-        </div>
-        <div class="card-actions">
-          <button class="btn" onclick="toggleMemoForm('edit', '3', '아침 리추얼', '실습용 가상 리추얼 기록')">수정</button>
-          <button class="btn btn-danger" onclick="deleteMemo('3')">삭제</button>
-        </div>
-      </div>
-      <div class="card">
-        <div class="card-content">
-          <div class="card-title">훈련 행정 자료</div>
-          <div class="card-desc">실습용 가상 행정 기록</div>
-        </div>
-        <div class="card-actions">
-          <button class="btn" onclick="toggleMemoForm('edit', '4', '훈련 행정 자료', '실습용 가상 행정 기록')">수정</button>
-          <button class="btn btn-danger" onclick="deleteMemo('4')">삭제</button>
+        <div class="card">
+          <div class="card-content">
+            <div class="card-title">훈련 행정 자료</div>
+            <div class="card-desc">실습용 가상 행정 기록</div>
+          </div>
+          <div class="card-actions">
+            <button class="btn" onclick="toggleMemoForm('edit', '4', '훈련 행정 자료', '실습용 가상 행정 기록')">수정</button>
+            <button class="btn btn-danger" onclick="deleteMemo('4')">삭제</button>
+          </div>
         </div>
       </div>
     </div>
@@ -198,14 +213,13 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
-    // index.html 스크립트 시작 부분
     const SUPABASE_URL = window.ENV_SUPABASE_URL || '';
     const SUPABASE_ANON_KEY = window.ENV_SUPABASE_ANON_KEY || '';
 
     let currentUserToken = null;
     let supabaseClient = (window.supabase && SUPABASE_URL && SUPABASE_ANON_KEY)
-  ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
-  : null;
+      ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+      : null;
 
     function initSupabase() {
       try {
@@ -245,6 +259,7 @@
       form.style.display = 'block';
     }
 
+    // 로그인 여부에 따른 UI 화면 전환 (핵심 조건)
     async function checkAuthSession() {
       if (!supabaseClient) return;
       try {
@@ -255,6 +270,20 @@
           document.getElementById('btnLogin').style.display = 'none';
           document.getElementById('btnSignup').style.display = 'none';
           document.getElementById('btnLogout').style.display = 'inline-block';
+
+          // 로그인 상태: 가이드 숨기고 메모 목록 노출
+          document.getElementById('loggedOutNotice').style.display = 'none';
+          document.getElementById('memoSection').style.display = 'block';
+        } else {
+          currentUserToken = null;
+          document.getElementById('authStatus').innerText = '비로그인 상태';
+          document.getElementById('btnLogin').style.display = 'inline-block';
+          document.getElementById('btnSignup').style.display = 'inline-block';
+          document.getElementById('btnLogout').style.display = 'none';
+
+          // 비로그인 상태: 메모 목록 숨기고 안내 문구 노출
+          document.getElementById('loggedOutNotice').style.display = 'block';
+          document.getElementById('memoSection').style.display = 'none';
         }
       } catch (err) {
         console.error('Session check failed:', err);
@@ -272,7 +301,7 @@
       }
 
       if (!supabaseClient) {
-        alert('⚠️ Supabase 설정(URL 및 ANON_KEY)이 필요합니다.');
+        alert('⚠️ Supabase 설정이 필요합니다.');
         return;
       }
 
@@ -296,11 +325,7 @@
     async function handleLogout() {
       if (supabaseClient) {
         await supabaseClient.auth.signOut();
-        currentUserToken = null;
-        document.getElementById('authStatus').innerText = '비로그인 상태';
-        document.getElementById('btnLogin').style.display = 'inline-block';
-        document.getElementById('btnSignup').style.display = 'inline-block';
-        document.getElementById('btnLogout').style.display = 'none';
+        await checkAuthSession();
         alert('🚪 로그아웃 되었습니다.');
       }
     }
