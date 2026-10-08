@@ -1,5 +1,5 @@
 {
-  "identityProvider": "Supabase Auth",
+  "originalApiUrl": "https://your-supabase-project.supabase.co/rest/v1/memos",
   "allowedRoutes": [
     "/api/notes",
     "/api/notes/:id"
