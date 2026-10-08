@@ -21,7 +21,6 @@ if (fs.existsSync(indexPath)) {
     process.exit(1);
   }
 
-  // 자리표시자 일괄 치환
   html = html.replaceAll('__SUPABASE_URL__', supabaseUrl);
   html = html.replaceAll('__SUPABASE_ANON_KEY__', supabaseAnonKey);
 
@@ -29,7 +28,19 @@ if (fs.existsSync(indexPath)) {
   console.log('✅ Supabase 환경변수가 public/index.html에 성공적으로 주입되었습니다.');
 }
 
-// 2. public/aleph.json 생성
+// 2. aleph.config.json 읽기 (originalApiUrl 가져오기용)
+let originalApiUrl = null;
+const configPath = path.join(process.cwd(), 'aleph.config.json');
+if (fs.existsSync(configPath)) {
+  try {
+    const configData = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+    originalApiUrl = configData.originalApiUrl || null;
+  } catch (e) {
+    console.error('⚠️ aleph.config.json 파싱 실패');
+  }
+}
+
+// 3. public/aleph.json 생성
 const alephPath = path.join(publicDir, 'aleph.json');
 const alephData = {
   repoUrl: process.env.VERCEL_GIT_REPO_OWNER && process.env.VERCEL_GIT_REPO_SLUG
@@ -39,6 +50,7 @@ const alephData = {
     ? `https://${process.env.VERCEL_URL}`
     : 'http://localhost:3000',
   commitSha: process.env.VERCEL_GIT_COMMIT_SHA || 'local-commit',
+  originalApiUrl: originalApiUrl,
   builtAt: new Date().toISOString()
 };
 
