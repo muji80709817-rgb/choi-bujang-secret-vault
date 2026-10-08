@@ -1,5 +1,5 @@
 {
-  "originalApiUrl": "https://your-supabase-project.supabase.co/rest/v1/memos",
+  "originalApiUrl": "https://choi-bujang-secret-vault-two-murex.vercel.app/",
   "allowedRoutes": [
     "/api/notes",
     "/api/notes/:id"
